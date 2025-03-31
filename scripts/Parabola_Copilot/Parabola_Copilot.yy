@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"Parabola_Copilot",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Parabola_Copilot",
+  "parent":{
+    "name":"Parabola",
+    "path":"folders/Libraries/Parabola.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
