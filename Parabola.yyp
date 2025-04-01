@@ -51,7 +51,6 @@
     {"id":{"name":"motion_done","path":"particles/motion_done/motion_done.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"Room2","path":"rooms/Room2/Room2.yy",},},
-    {"id":{"name":"Parabola_Copilot","path":"scripts/Parabola_Copilot/Parabola_Copilot.yy",},},
     {"id":{"name":"Parabola","path":"scripts/Parabola/Parabola.yy",},},
     {"id":{"name":"sChecker_100","path":"sprites/sChecker_100/sChecker_100.yy",},},
     {"id":{"name":"sChecker_20","path":"sprites/sChecker_20/sChecker_20.yy",},},
