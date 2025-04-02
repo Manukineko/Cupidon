@@ -1,3 +1,9 @@
+/*
+TO DO :
+- Changer le boolen `_once` en single frame ou on_enter pour Motion_Is_At et Add_Checkpoint
+- ajouter un boolen `_once` a add_Checkpoint qui signifie que le checkpoint ne sera pas valider meme si le ratio match encore.
+*/
+
 enum MOTION_UNIT{
     TIME,
     RATIO,
@@ -51,7 +57,7 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
 	motion_curve_channel = undefined;
     
     rotation_rate    = 0; // vitess de rotation sur le point x,y
-    rotations_N     = 0; // nombre de rotations max
+    cycles_amount     = 0; // nombre de rotations max
     force_rotation  = false;
     force_cycle     = false;
     
@@ -63,7 +69,7 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
     is_completed	= false; // le mouvement sur la courbe est complet (ratio > 1)
     at_end          = false; // Passe à `true` sur la frame de completion de la courbe (ratio == 1), puis repasse a false
     finalize		= false; // booleen interne s'assurant d'executer les operation une fois la courbe complete, une seule fois.
-    stability_counter = 0
+    stability_counter = 0;
     
     on_end_callback	= undefined;
     on_end_arg		= undefined;
@@ -227,12 +233,12 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
     point_Get_Y = function(_pos) {
         return sqr(1 - _pos) * start_y + 2 * (1 - _pos) * _pos * control_y + sqr(_pos) * end_y;
     };
-    /// @desc    the speed of the tracking point on the curve (from the starting point to the ending point). it can be a Time, a Ratio or Steps.
+    /// @desc    the speed of the tracking point on the curve (from the starting point to the ending point). it can be a Time, a Ratio or Steps. The method also calculate a basic rotation_rate
     /// @args {real} _speed time: in second, ratio: percentage by steps between [0, 100], steps: gamemaker's steps  
-    /// @args {string}
-    motion_Speed = function(_speed, _speed_unit = "unit_time"){
-        if variable_struct_exists(self, _speed_unit){
-            motion_unit = variable_struct_get(self, _speed_unit)
+    /// @args {string} [_motion_unit]="unit_time" The type of unit of the speed value set.
+    motion_Speed = function(_speed, _motion_unit = "unit_time"){
+        if variable_struct_exists(self, _motion_unit){
+            motion_unit = variable_struct_get(self, _motion_unit);
         }
         switch(motion_unit){
             //motion_time (second)
@@ -248,14 +254,16 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
             //steps
             case 2 :    motion_steps = abs(_speed);
                         motion_time = motion_steps / game_speed;
-                        motion_rate = 1/motion_steps
+                        motion_rate = 1/motion_steps;
             break;
         }
         rotation_rate = 360/motion_steps;
 
     	return self;
     }
-    ///@desc Calculer la longueur reelle de la courbe si besoin
+    ///@desc Calculate the curve's length (this is a slow method).
+    /// @arg {real} [_precision]=100 the precision of the calculation. a higher value means a better precision but at a cost of performance.
+    /// @return length
     calculate_Length = function(_precision = 100) {
         if (length < 0) { // Seulement si non déjà calculée
             var total_length = 0;
@@ -275,8 +283,8 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
         return length;
     };
 
-    /// @desc Met à jour automatiquement le mouvement
-    /// @arg {bool} [_on_end] Trigger the callback when the end of the curve is reached.
+    /// @desc Update the tracking point's coordinate on the curve. This method is to be call each frame to be fully exploited.
+    /// @arg {bool} [_on_end]=false Trigger the callback when the end of the curve is reached.
 	motion = function(_on_end = false) {
 	    if is_stopped {
 	        if is_playing {
@@ -300,7 +308,7 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
                 continue;
             }
             
-                // Vérifier si le ratio est atteint
+                // Check if the ratio has been reached
             if (motion_Is_At(_checkpoint.ratio, _checkpoint.once)) {
                 // Exécuter le callback si défini
                 if (!is_undefined(_checkpoint.callback)) {
@@ -311,46 +319,46 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
                     }
                 }
         
-                // Marquer comme déclenché si `_once` est activé
+                // Prevent the checkpoint to be checked again if `once` is true.
                 if (_checkpoint.once) {
                     _checkpoint.checked = true;
                 }
             }
         }
         
-	    // Sauvegarder la valeur précédente de motion_ratio
+	    // We save the value of motion_ratio`
 	    m_prev_ratio = motion_ratio;
 	
-	    // Incrémenter curve_ratio selon _speed
-	    curve_ratio += motion_rate//_speed; // Respect de la durée calculée
+	    // Then we increment it based on the motion_rate (calculated in the `motion_Speed` method)
+	    curve_ratio += motion_rate;
 	
-	    // Appliquer une Animation Curve si définie
+	    // If an Animation Curve is set, use it instead.
 	    if (!is_undefined(motion_curve_channel)) {
-            m_prev_ratio = animcurve_channel_evaluate(motion_curve_channel, curve_ratio - motion_rate)
+            m_prev_ratio = animcurve_channel_evaluate(motion_curve_channel, curve_ratio - motion_rate);
 	        motion_ratio = animcurve_channel_evaluate(motion_curve_channel, curve_ratio);
-            curve_ratio = min(curve_ratio,1)
-            m_next_ratio = animcurve_channel_evaluate(motion_curve_channel, curve_ratio + motion_rate)
+            curve_ratio = min(curve_ratio,1);
+            m_next_ratio = animcurve_channel_evaluate(motion_curve_channel, curve_ratio + motion_rate);
 	    } else {
-	        motion_ratio = curve_ratio; // Par défaut, progression linéaire
-            m_next_ratio = motion_ratio + motion_rate
+	        motion_ratio = curve_ratio; // linear progression by default
+            m_next_ratio = motion_ratio + motion_rate;
 	    }
 
-	     //Détection de la dernière transition vers 1 de maniere dynamique afin que ca puisse fonctionner
-        //avec les Animation Curves
+	     //Managed special cases with some Animation Curves (like Elastic or Bounce) where 1 could be reached several time while the motion isn't completed yet.
+	     //We scale dynamically the range based on the motion_rate.
         var _epsilon_dynamic = max(0.00001, motion_rate * 0.001);
 	    if abs(curve_ratio - 1) <= _epsilon_dynamic && !is_completed && m_prev_ratio <= motion_ratio {
 	        is_completed = true; // Marquer la stabilisation à 1
 	        motion_ratio = 1;
 	    }
 	
-	    // Déclencher le callback seulement à la dernière transition vers 1
+	    // Finalyze only when the last 1 has been reached.
 	    if (is_completed && motion_ratio == 1 && !finalize) {
-	        finalize = true; // Marquer comme terminé
-	        at_end = true;    // Indiquer la fin
-            //force_rotation = true;
+	        finalize = true;
+	        at_end = true;    // flag the frame as the end of curve one
+   
 	        show_debug_message("END REACHED");
 	
-	        // Appeler le callback si nécessaire
+	        // Trigger the callback if `_on_end` is true
 	        if _on_end && !is_undefined(on_end_callback) {
 	            if is_undefined(on_end_arg) {
 	                on_end_callback();
@@ -360,46 +368,45 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
 	        }
 	    }
 	
-	    // Réinitialiser `at_end` pour permettre de declencher des actions uniques manuellement
-        // en checkant la variable.
+	    //If the motion ratio goes on, we unflag the frame.
+	    //We can also use that variable to check if the tracker has reached the end.
 	    if (motion_ratio > 1 && at_end) {
 	        at_end = false;
 	    }
          
-	    // Mise à jour des coordonnées du point
+	    // update the tracker point
 	    point_Set(motion_ratio);
-        //La rotation est gerer en interne, mais je veux donner l'option de la gerer via
-        //la method public `rotate`
-        __rotate()
+        //The rotation is managed internally, but I plane to allow to managed it manually throuhgh the `rotate` method
+        __rotate();
 	
 	    return self;
 	};
-    /// @desc initialise le type de rotation
-    /// @arg {real} _speed La vitesse de rotation
-    /// @arg {real}  _rotations_N Le nombre de rotation completes (-1: illimitée, 0:pas de rotation (egale a _speed = 0), 1..n: rotations)
-    /// @arg {bool} _force_cycle force exclusivement des rotations complete pour atteindre la fin de la courbe
-    /// (calcul une vitesse approchant celle passé a `_speed` selon le parametre `_rotations_N`. 
-    rotation = function(_speed = rotation_rate, _rotations_N = -1, _force_cycle = false) {
+    /// @desc set the rotation of the tracker point
+    /// @arg {real} [_speed]=rotation_rate the rotation speed. By default, it use the rotation speed calculated by the method `motion_Speed`
+    /// @arg {real} _cycles_amount the number of complete rotations (cycle) (-1: illimited, 0: no cycle (no rotation, equal to speed = 0), 1..n: cycle)
+    /// @arg {bool} _force_cycle force only cycle (complete rotation) before the tracker reached the end point.\n
+    /// it will sync
+    rotation = function(_speed = rotation_rate, _cycles_amount = -1, _force_cycle = false) {
         // Calculer les paramètres initiaux
         force_cycle = _force_cycle;
-        rotations_N = floor(_rotations_N); // Stocker le type de rotation
+        cycles_amount = floor(_cycles_amount);
         
         if (force_cycle && motion_steps > 0) {
-            if (rotations_N == -1) {
+            if (cycles_amount == -1) {
                 var _cycles = motion_steps * _speed / 360;
                 var _whole_cycles = round(_cycles);
                 rotation_rate = (360 * _whole_cycles) / motion_steps; // Ajuster la vitesse
             } else {
-                rotation_rate = (360 * rotations_N) / motion_steps; // Fixer pour `rotations_N`
+                rotation_rate = (360 * cycles_amount) / motion_steps; // Fixer pour `cycles_amount`
             }
         } else {
             rotation_rate = _speed; // Utiliser `_speed` directement si pas de synchronisation
         }
     
         
-        return self; // Permettre le chaînage
+        return self;
     };
-
+	/// @desc Rotate the point. Should be called in the step event.
      rotate = function() {
         if is_stopped { 
             angle = 0;
@@ -408,16 +415,16 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
         
         if (is_paused) {
             if force_rotation{
-                angle += rotation_rate; // Appliquer une incrémentation finale
-                force_rotation = false; // Réinitialiser le flag
+                angle += rotation_rate; // we apply a final rotation in case `rotate` is called after `motion` and the tracking point has been paused on that framepaused
+                force_rotation = false; 
                 return self;
             }
-            return self; // Ne rien faire si arrêté ou en pause
+            return self;
         }
     
-        __rotate()
+        __rotate();
     
-        return self; // Permettre le chaînage
+        return self;
     };
 
     
@@ -477,17 +484,20 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
     }
     /// @desc Return true when the ratio is reached.
     /// @arg {real} _ratio the ratio on the curve to check
-    /// @arg {bool} [_once] fire true only once.
-    /// Can be trigger once.
-    /// If you use an Animation Curve, the method could return true if the motion ratio match the set ratio
-    /// Could happened with curve like Bounce or Elastic.
+    /// @arg {bool} [_once] Only on the frame it turns true.
+    /* If you use an Animation Curve, the method could return true multiple time, even with the _once` booleen.
+    // Could happened with curves like Bounce or Elastic.*/
     motion_Is_At = function(_ratio, _once = true){
         return _once 
             ? motion_ratio >= _ratio &&  m_next_ratio >= _ratio && m_prev_ratio < _ratio
-            : motion_ratio >= _ratio
+            : motion_ratio >= _ratio;
     }
-    /// @desc Ajoute un checkpoint a la list de check point de la courbe.
-    /// pas de gestion des doublons pour l'instant.
+    /// @desc	Add a checkpoint to the curve's checkpoints array.
+    //			No duplicates support for now.
+    /// @arg	{real} _ratio the ratio to reach to trigger the check point
+    /// @arg	{function} [_callback]=undefined the callback to fire
+    /// @arg	{struct,array} [_args]=undefined the argument for the callback
+    /// @arg	{bool} [_once]=true If the checkpoint should be checked once or each time it is reached. 
     add_Checkpoints = function(_ratio, _callback = undefined, _args = undefined, _once = true){
         var _data = {
             ratio : _ratio,
@@ -496,13 +506,13 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
             once : _once,
             checked : false
         }
-        array_push(checkpoints,_data)
-        return self
+        array_push(checkpoints,_data);
+        return self;
     }
-    /// @desc Vérifie si un checkpoint est atteint.
-    /// @param {real} _index L'indice du checkpoint dans la liste.
-    /// @param {bool} _once Active uniquement si le checkpoint est à déclencher une fois.
-    /// @return {bool} Retourne true si le checkpoint est atteint.
+    /// @desc return true if a checkpoint has been reached
+    /// @param {real} _index the index of the checkpoint in the checkpoints array
+    /// @param {bool} _once only on the frame it turns true
+    /// @return {bool} true or false
     motion_At_Checkpoint = function(_index, _once = true){
         // Vérifier si l'index est valide
         if (_index < 0 || _index >= array_length(checkpoints)) {
@@ -513,7 +523,7 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
         var _checkpoint = checkpoints[_index];
     
         // Vérifier si le ratio est atteint
-        return motion_Is_At(_checkpoint.ratio, _once) 
+        return motion_Is_At(_checkpoint.ratio, _once);
     };
 
     /// @desc Définit une courbe d'animation pour le mouvement et met en cache le canal 0
@@ -549,13 +559,13 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
         if (rotation_rate > 0) {
             angle += rotation_rate; // Incrémenter l'angle
     
-            if (rotations_N > 0) {
-                var max_angle = 360 * rotations_N;
+            if (cycles_amount > 0) {
+                var max_angle = 360 * cycles_amount;
                 if (angle >= max_angle) {
                     angle = max_angle;
                     rotation_rate = 0; // Arrêter la rotation une fois complétée
                 }
-            } else if (rotations_N == -1) {
+            } else if (cycles_amount == -1) {
                 if (angle >= 360) {
                     angle = angle mod 360; // Réinitialiser après un cycle complet
                 }
