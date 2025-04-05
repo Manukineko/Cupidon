@@ -20,7 +20,7 @@ if keyboard_check_pressed(vk_space){
     trajectory.motion_toggle_Pause();
 }
 
-trajectory.motion(true).rotate();
+trajectory.motion(true).follow()//rotate();
 
 x = trajectory.x;
 y = trajectory.y;    

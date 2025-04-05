@@ -372,11 +372,7 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
 	
 	    return self;
 	};
-    /// @desc set the rotation of the tracker point
-    /// @arg {real} [_speed]=rotation_rate the rotation speed. By default, it use the rotation speed calculated by the method `motion_Speed`
-    /// @arg {real} _cycles_amount the number of complete rotations (cycle) (-1: illimited, 0: no cycle (no rotation, equal to speed = 0), 1..n: cycle)
-    /// @arg {bool} _force_cycle force only cycle (complete rotation) before the tracker reached the end point.\n
-    /// it will sync
+    
     /// @desc    the speed of the tracking point on the curve (from the starting point to the ending point). it can be a Time, a Ratio or Steps. The method also calculate a basic rotation_rate
     /// @args {real} _speed time: in second, ratio: percentage by steps between [0, 100], steps: gamemaker's steps  
     /// @args {string} [_motion_unit]="unit_time" The type of unit of the speed value set.
@@ -405,6 +401,11 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
 
     	return self;
     }
+    /// @desc set the rotation of the tracker point
+    /// @arg {real} [_speed]=rotation_rate the rotation speed. By default, it use the rotation speed calculated by the method `motion_Speed`
+    /// @arg {real} _cycles_amount the number of complete rotations (cycle) (-1: illimited, 0: no cycle (no rotation, equal to speed = 0), 1..n: cycle)
+    /// @arg {bool} _force_cycle force only cycle (complete rotation) before the tracker reached the end point.\n
+    /// it will sync
     rotation = function(_speed = rotation_rate, _cycles_amount = -1, _force_cycle = false) {
         // Calculer les paramètres initiaux
         force_cycle = _force_cycle;
@@ -445,6 +446,23 @@ function Parabezier(_start_x = undefined, _start_y = undefined, _distance_h = 0,
     
         return self;
     };
+    follow = function(){
+    	angle = __get_Tangent(motion_ratio)
+    }
+	/// @desc Calculate the tangent of a point on the curve at `t`.
+	__get_Tangent = function(_t) {
+	    // Control points of the Bézier curve
+	    var p0x = start_x, p0y = start_y;
+	    var p1x = control_x, p1y = control_y;
+	    var p2x = end_x, p2y = end_y;
+	
+	    // Derivative (dx/dt, dy/dt) at t
+	    var dx = 2 * (1 - _t) * (p1x - p0x) + 2 * _t * (p2x - p1x);
+	    var dy = 2 * (1 - _t) * (p1y - p0y) + 2 * _t * (p2y - p1y);
+	
+	    // Calculate angle using point_direction
+	    return point_direction(0, 0, dx, dy);
+	};
 
     
     /// @desc start the stracking point. Can be use to resume as well. the `motion` method needs to be called somewhere.

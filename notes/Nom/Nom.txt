@@ -1,0 +1,5 @@
+# Nom de librairie
+- Archer : simple, renvoie bien a une trajectoire parabolic
+- Meteor, Shooting Star, Ryusei : Plus poetique, la courbe d'un corps celeste dans le ciel. Le logo peut etre fun.
+- Bisou : un bisou d'un airkiss qui s'envole en faisant une parabole
+- Bezou, Béziou : de alternative hilarante de Bisou. la premiere fait un peut accent magrebin quand meme, la seconde est rigolote mait pas sur qu7elle soit bien prononcable en anglais.
