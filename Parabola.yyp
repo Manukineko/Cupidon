@@ -45,7 +45,7 @@
     {"id":{"name":"ElasticOut","path":"animcurves/ElasticOut/ElasticOut.yy",},},
     {"id":{"name":"Linear","path":"animcurves/Linear/Linear.yy",},},
     {"id":{"name":"WeirdOne","path":"animcurves/WeirdOne/WeirdOne.yy",},},
-    {"id":{"name":"Nom","path":"notes/Nom/Nom.yy",},},
+    {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},},
     {"id":{"name":"Object2","path":"objects/Object2/Object2.yy",},},
     {"id":{"name":"Target","path":"objects/Target/Target.yy",},},
     {"id":{"name":"motion_done","path":"particles/motion_done/motion_done.yy",},},
