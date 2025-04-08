@@ -177,11 +177,13 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         return self;
     };
     
-    /// @desc Define the top height of the parabola (vertex) with a distance. It is **NOT** the control point's height
+    /// @desc Define the top height of the parabola (vertex) with a distance. It is **NOT** the control point's height.
     /// **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
     /// @param {real} _apex_height The height of the parabola
     /// @param {real} [_x_ratio]=0.5 the x position where the vertex is positioned.
-    /// @param {bool} [_isometric]=false This modify the height calculation. false: from the lowest extremity point, true: from the line between the start point and the end point
+    /// @param {bool} [_isometric]=false This modify the height calculation between a kind of ortho view & Isometric view. 
+    ///				false : ortho. the height is calculated from the highest curve's extremity point in the room (the lowest `y` value of either the start or the end point)
+    ///				true : isometric. the height is calculated from the line from the start poitn and the end point.
     /// @returns {struct}
     apex_Height = function(_apex_height, _x_ratio = 0.5, _isometric = false ) {
         height = _apex_height;
@@ -211,17 +213,17 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         return self;
     };
     
-    /// @desc Define the top height of the parabola (vertex) with a ratio.
+    /// @desc Define the top height of the parabola (vertex) with a ratio. Isometric mode isn't supported yet.
     /// **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
     /// @param {real} [_y_ratio]=0.5 vertical ratio (0,1) to stay on the parabola, <0,1<: outside of the parabola.
     /// @param {real} [_x_ratio]=0.5 horizontal ratio (0,1) to stay on the parabola, <0,1<: outside of the parabola.
     /// @returns {struct}
     apex_Height_Alt = function(_y_ratio = 0.5, _x_ratio = 0.5) {
-
+        
         // Calculate the horizontale position of the vertex
         vertex_x = start_x + _x_ratio * distance_h;
         // Calculate the verticale position of the vertex
-        vertex_y = start_y + _y_ratio * distance_v;
+        vertex_y = min(start_y, end_y) - _y_ratio * distance_v;
 
         // Calculate the controle point coordinate (control_x, control_y) from the vertex and the start & end points
         control_x = 2 * vertex_x - 0.5 * (start_x + end_x);

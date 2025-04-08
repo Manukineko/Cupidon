@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"cUpidon",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"cUpidon",
+  "parent":{
+    "name":"cUpidon",
+    "path":"folders/Libraries/cUpidon.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

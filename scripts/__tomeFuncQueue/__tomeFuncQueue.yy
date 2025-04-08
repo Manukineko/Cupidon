@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Parabola",
+  "%Name":"__tomeFuncQueue",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Parabola",
+  "name":"__tomeFuncQueue",
   "parent":{
-    "name":"Parabola",
-    "path":"folders/Libraries/Parabola.yy",
+    "name":"_system",
+    "path":"folders/Tome/_system.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
