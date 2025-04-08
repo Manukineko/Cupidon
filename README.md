@@ -1,5 +1,5 @@
-# Parabola (tentative name)
-a small library to create trajectories with Quadratic Bezier Curves.
+# c∪pido∩
+a small library to create trajectories with Quadratic Bezier Curves that you will love (may be).
 
 I was quite frustrated when I add to create a trajectory for annitem to follow in order to simulate a simple throw at from a character, without relying on physics and friction.
 I just wanted a nice parabola.
