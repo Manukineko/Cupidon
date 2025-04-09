@@ -1,3 +1,6 @@
+/// @category Cupidon
+///@title Constructor and Methods
+
 // set the type of gamespeed for the library. Default: gamespeed_fps
 //gamespeed_microseconds is UNTESTED
 #macro CUPIDON_GAMESPEED_TYPE gamespeed_fps 
@@ -25,7 +28,10 @@ TO DO :
 -[ ] lot of getters (anchor x, y, angle)
 */
 
-/// @desc Cupidon Create a Parabola as a Quadratic Bézier Curve. The parabola has an anchor point with an x and y coordinate as well as an angle to use in order to attach an object or any thing else that can use them.
+
+/// @constructor
+/// @func Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _distance_v = 0, _height = 0, _isometric = false, _internal = true, _scope = other)
+/// @desc Create a Parabola as a Quadratic Bézier Curve. The parabola has an anchor point with an x and y coordinate as well as an angle to use in order to attach an object or any thing else that can use them.
 ///			It also has methods to update the anchor position and rotation along the Parabola.
 /// @param {real} [_start_x] The start point x coordinate
 /// @param {real} [_start_y] The start point y coordinate
@@ -100,7 +106,8 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     
 #region Curve
     
-    /// @desc  create a simple parabola (mimicing parametric equations) with default values
+    ///@method simple_Parabola(_start_x, _start_y, _distance_h, _distance_v, _height, _isometric)
+    /// @desc  Create a simple parabola (mimicing parametric equations) with default values
     /// @param {real} _start_x start point coordinate
     /// @param {real} _start_y end point coordinate
     /// @param {real} [_distance_h]=100 the horizontal distance to the end point
@@ -108,13 +115,14 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     /// @param {real} [_height]=100 the height of the parabola
     /// @param {bool} [_isometric]=false toogle the fake isometric calculation
     /// @returns {struct} self 
+    
     simple_Parabola = function(_start_x, _start_y, _distance_h = 100, _distance_v = 0, _height = 100, _isometric = false){
         start_Point(_start_x, _start_y);
         end_By_Distance(_distance_h, _distance_v);
         apex_Height(_height, 0.5, _isometric);
         return self;
      }
-    
+    ///@method start_Point(x,y)
     /// @desc Define the starting point
     /// @arg {real} _x x position
     /// @arg {real} _y y position

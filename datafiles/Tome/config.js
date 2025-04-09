@@ -1,8 +1,8 @@
 const config = {
-    description:"Documentation for Your Project",
+    description:"The documentation for Cupidon. A small library for creating easy parabola for GameMaker",
   favicon:"assets/docsIcon.png",
   themeColor:"#FFFFFF",
-  name:"Project Title",
-  latestVersion:"Version",
-  otherVersions:null,
+  name:"Cupidon - Wiki",
+  latestVersion:"Beta-1",
+  otherVersions:["Beta 1"],
 };

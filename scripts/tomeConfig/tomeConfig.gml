@@ -8,7 +8,7 @@
 #macro TOME_GITHUB_USERNAME "manukineko"
 
 // The name of the repo where the generated docs will be commited and pushed
-#macro TOME_GITHUB_REPO_NAME "Cupidon\docs"
+#macro TOME_GITHUB_REPO_NAME "Cupidon-docs"
 
 // The branch of the repo where the generated docs will be pushed
 #macro TOME_GITHUB_REPO_BRANCH "master"
@@ -20,12 +20,12 @@
 #macro TOME_VERBOSE true
 
 // Use an external text file to store your Github token (useful if pushing to a public repo)
-#macro TOME_USE_EXTERNAL_TOKEN true
+#macro TOME_USE_EXTERNAL_TOKEN false
 
-#macro TOME_EXTERNAL_TOKEN_PATH "E:\GAMEDEV\TOOLS\GIT\Cupidon\Tome-GH-token.txt"
+#macro TOME_EXTERNAL_TOKEN_PATH "E:/GAMEDEV/TOOLS/GIT/Cupidon/Tome-GH-token.txt"
 
 // Instead of pushing files directly to Github, instead copy them to a local directory to be pushed manually 
-#macro TOME_LOCAL_REPO_MODE false
+#macro TOME_LOCAL_REPO_MODE true
 
-#macro TOME_LOCAL_REPO_PATH "E:\GAMEDEV\TOOLS\GIT\Cupidon-docs"
+#macro TOME_LOCAL_REPO_PATH "E:/GAMEDEV/TOOLS/GIT/Cupidon-docs/"
 
