@@ -20,12 +20,12 @@
 #macro TOME_VERBOSE true
 
 // Use an external text file to store your Github token (useful if pushing to a public repo)
-#macro TOME_USE_EXTERNAL_TOKEN false
+#macro TOME_USE_EXTERNAL_TOKEN true
 
 #macro TOME_EXTERNAL_TOKEN_PATH "E:/GAMEDEV/TOOLS/GIT/Cupidon/Tome-GH-token.txt"
 
 // Instead of pushing files directly to Github, instead copy them to a local directory to be pushed manually 
-#macro TOME_LOCAL_REPO_MODE true
+#macro TOME_LOCAL_REPO_MODE false
 
 #macro TOME_LOCAL_REPO_PATH "E:/GAMEDEV/TOOLS/GIT/Cupidon-docs/"
 

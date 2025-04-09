@@ -32,6 +32,7 @@
   ],
   "ForcedPrefabProjectReferences":[],
   "IncludedFiles":[
+    {"$GMIncludedFile":"","%Name":"Docs.gml","CopyToMask":-1,"filePath":"datafiles","name":"Docs.gml","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":".nojekyll","CopyToMask":-1,"filePath":"datafiles/Tome","name":".nojekyll","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"codeTheme.css","CopyToMask":-1,"filePath":"datafiles/Tome/assets","name":"codeTheme.css","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"customTheme.css","CopyToMask":-1,"filePath":"datafiles/Tome/assets","name":"customTheme.css","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
@@ -54,7 +55,7 @@
     {"id":{"name":"ElasticOut","path":"animcurves/ElasticOut/ElasticOut.yy",},},
     {"id":{"name":"Linear","path":"animcurves/Linear/Linear.yy",},},
     {"id":{"name":"WeirdOne","path":"animcurves/WeirdOne/WeirdOne.yy",},},
-    {"id":{"name":"Homepage","path":"notes/Homepage/Homepage.yy",},},
+    {"id":{"name":"Note1","path":"notes/Note1/Note1.yy",},},
     {"id":{"name":"__tomeController","path":"objects/__tomeController/__tomeController.yy",},},
     {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},},
     {"id":{"name":"Object2","path":"objects/Object2/Object2.yy",},},

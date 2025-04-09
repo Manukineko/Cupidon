@@ -1,5 +1,5 @@
 /// @category Cupidon
-///@title Constructor and Methods
+/// @title API
 
 // set the type of gamespeed for the library. Default: gamespeed_fps
 //gamespeed_microseconds is UNTESTED
@@ -30,7 +30,7 @@ TO DO :
 
 
 /// @constructor
-/// @func Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _distance_v = 0, _height = 0, _isometric = false, _internal = true, _scope = other)
+/// @func Cupidon(_start_x, _start_y, _distance_h, _distance_v, _height, _isometric, _internal, _scope)
 /// @desc Create a Parabola as a Quadratic Bézier Curve. The parabola has an anchor point with an x and y coordinate as well as an angle to use in order to attach an object or any thing else that can use them.
 ///			It also has methods to update the anchor position and rotation along the Parabola.
 /// @param {real} [_start_x] The start point x coordinate
@@ -105,6 +105,8 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     motion_unit		= CUPIDON_DEFAULT_MOTION_UNIT; // the motion unit to use for calcute the anchor speed
     
 #region Curve
+    /// @text ## Curve
+    /// The methods that will set the parabola
     
     ///@method simple_Parabola(_start_x, _start_y, _distance_h, _distance_v, _height, _isometric)
     /// @desc  Create a simple parabola (mimicing parametric equations) with default values
@@ -115,18 +117,17 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     /// @param {real} [_height]=100 the height of the parabola
     /// @param {bool} [_isometric]=false toogle the fake isometric calculation
     /// @returns {struct} self 
-    
     simple_Parabola = function(_start_x, _start_y, _distance_h = 100, _distance_v = 0, _height = 100, _isometric = false){
         start_Point(_start_x, _start_y);
         end_By_Distance(_distance_h, _distance_v);
         apex_Height(_height, 0.5, _isometric);
         return self;
      }
-    ///@method start_Point(x,y)
+    /// @method start_Point(x,y)
     /// @desc Define the starting point
     /// @arg {real} _x x position
     /// @arg {real} _y y position
-    /// @return {struct} return self to allow chaining.
+    /// @return {struct} self
     start_Point = function(_x, _y) {
         start_x = _x;
         start_y = _y;
@@ -134,10 +135,11 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         __update_Metrics()
         return self;
     };
+    /// @method control_Point(x,y)
     /// @desc Define the control point position (the middle point)
     /// **Shouldn't be use neither with another `apex_*` method as it will change the height calculated by those methods as well**
-    /// @param {any*} _x x position
-    /// @param {any*} _y y position
+    /// @param {real} _x x position
+    /// @param {real} _y y position
     /// @returns {struct} 
     control_Point = function(_x, _y) {
         control_x = _x;
@@ -148,6 +150,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         
         return self;
     };
+    /// @method end_Point(x,y)
     /// @desc Define the ending point
     /// @arg {real} _x x position
     /// @arg {real} _y y position
@@ -158,6 +161,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         __update_Metrics()
         return self;
     };
+    /// @method end_By_Distance(horizontal, vertical)
     /// @desc  Define an ending point based on a vhorizontal and vertical distance from the starting point
     /// @param {real} _distance_h Description
     /// @param {real} _distance_v Description
@@ -170,6 +174,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         distance = point_distance(start_x, start_y, end_x, end_y);
         return self;
     };
+    /// @method end_By_Direction(distance, direction)
     /// @desc Defini an ending point based on a distance and a direction (use `lengthdir` internally. 
     /// @param {real} _distance a distance
     /// @param {real} _direction a direction in degre
@@ -184,9 +189,9 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         distance = _distance;
         return self;
     };
-    
+    /// @method apex_Height(height, x pos, isometric)
     /// @desc Define the top height of the parabola (vertex) with a distance. It is **NOT** the control point's height.
-    /// **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
+    /// @text !> **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
     /// @param {real} _apex_height The height of the parabola
     /// @param {real} [_x_ratio]=0.5 the x position where the vertex is positioned.
     /// @param {bool} [_isometric]=false This modify the height calculation between a kind of ortho view & Isometric view. 
@@ -221,8 +226,11 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         return self;
     };
     
+    /// @text ---
+    
+    /// @method apex_Height_Alt(x pos, y pos)
     /// @desc Define the top height of the parabola (vertex) with a ratio. Isometric mode isn't supported yet.
-    /// **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
+    /// @text !> **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
     /// @param {real} [_y_ratio]=0.5 vertical ratio (0,1) to stay on the parabola, <0,1<: outside of the parabola.
     /// @param {real} [_x_ratio]=0.5 horizontal ratio (0,1) to stay on the parabola, <0,1<: outside of the parabola.
     /// @returns {struct}
@@ -238,7 +246,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         control_y = 2 * vertex_y - 0.5 * (start_y + end_y);
         return self;
     };
-
+    /// @method apex_Coord(x, y)
     /// @desc  Define the top height of the parabola (vertex) with a coordinate. It is **NOT** the control point's coordinate
     /// **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
     /// @param {any*} _x x position
@@ -255,8 +263,9 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         control_y = 2 * vertex_y - 0.5 * (start_y + end_y);
         return self;
     }
-    ///@desc Calculate the parabola's length (this is a slow method).
-    ///		I discourage using it each steps
+    /// @method curve_Length(precision)
+    /// @desc Calculate the parabola's length (this is a slow method).
+    ///	@text ?> I discourage using it each steps
     /// @arg {real} [_precision]=100 the precision of the calculation. a higher value means a better precision but at a cost of performance. 
     /// @return length
     curve_Length = function(_precision = 100) {
@@ -277,11 +286,12 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         }
         return length;
     };
+    /// @method curve_Length_Ext(method, precision)
     /// @desc Calculate the parabola's length using different approaches.
-	/// @arg {real} [_method] = 0 Select the calculation method.
-	/// - 0: Approximation by summing segments.
+    /// - 0: Approximation by summing segments.
 	/// - 1: Numerical integration (Simpson's Rule).
 	/// - 2: Analytical formula (if applicable).
+	/// @arg {real} [_method]=0 Select the calculation method.
 	/// @arg {real} [_precision]=100 The precision level for calculation. Only if the method is set at 0
 	/// @return {real} The length of the parabola.
 	curve_Length_Ext = function(_method = 0, _precision = 100) {
@@ -310,6 +320,15 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 #endregion
 #region Anchor
     
+    /// @text ## Anchor
+    /// @text The Anchor is a point whose coordinate are stored in the `x` and `y` variable.
+    /// They are automatically updated when calling `anchor_Motion` and you retrieve those like this:
+    /// @example
+    /// // Instance step event
+    /// x = myCupidon.x
+    /// y = myCupidon.y
+    
+    /// @method anchor_Set(position)
     /// @desc  Set the internal point's `x` and `y` on the parabola.
     /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
     /// @returns {struct}    
@@ -319,7 +338,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 
         return self;
     };
-    
+    /// @method anchor_Motion([_on_end])
     /// @desc Update the tracking point's coordinate on the parabola. This method is to be call each frame to be fully exploited.
     /// @arg {bool} [_on_end]=false Trigger the callback when the end of the parabola is reached.
 	anchor_Motion = function(_on_end = false){
@@ -427,6 +446,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 	
 	    return self;
 	};
+	/// @method anchor_Rotate()
     /// @desc Rotate the point. Should be called in the step event.
      anchor_Rotate = function() {
      	if (!rotation_initialized) {
@@ -452,11 +472,19 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     
         return self;
     };
+    
+    /// @text ---
+    
+    /// @method anchor_Orient()
     /// @desc set the angle of the anchor point to the tangent of the parabola at its current position.
 	/// This method updates the angle based on the motion ratio (position), ensuring the tracker maintains a natural orientation along the parabola.
     anchor_Orient = function(){
     	angle = __get_Tangent(motion_ratio);
     }
+    
+    /// @text ---
+    
+    /// @method anchor_Speed(_speed, [_motion_unit])
     /// @desc    the speed of the tracking point on the parabola (from the starting point to the ending point). it can be a Time, a Ratio or Steps. The method also calculate a basic rotation_rate
     /// @args {real} _speed time: in second, ratio: percentage by steps between [0, 100], steps: gamemaker's steps  
     /// @args {string} [_motion_unit]="unit_time" The type of unit of the speed value set.

@@ -12,10 +12,10 @@ global.__tomeNavbarItemsArray = [];
 /*
 	Add all the files you wish to be parsed here!
 	                                            */
-tome_add_script("Cupidon")			
+tome_add_script("Cupidon")
 												
 tome_set_site_description("The documentation for Cupidon. A small library for creating easy parabola for GameMaker");
 tome_set_site_name("Cupidon - Wiki");
-tome_set_site_latest_version("Beta 1");
-tome_set_site_older_versions(["Beta 1"]);
+tome_set_site_latest_version("Beta-1");
+tome_set_site_older_versions(["Beta-1"]);
 tome_set_site_theme_color("#FFFFFF");
