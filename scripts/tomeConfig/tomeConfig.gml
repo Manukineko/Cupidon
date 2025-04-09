@@ -27,5 +27,5 @@
 // Instead of pushing files directly to Github, instead copy them to a local directory to be pushed manually 
 #macro TOME_LOCAL_REPO_MODE false
 
-#macro TOME_LOCAL_REPO_PATH ""
+#macro TOME_LOCAL_REPO_PATH "E:\GAMEDEV\TOOLS\GIT\Cupidon-docs"
 

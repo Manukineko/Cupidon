@@ -1,8 +1,8 @@
 const config = {
-     latestVersion: "",
-   otherVersions: [],
-   description: "Documentation for Your Project",
-   favicon: "assets/docsIcon.png",
-   name: "Your Project",
-   themeColor: "#FFFFFF" ,
+    description:"Documentation for Your Project",
+  favicon:"assets/docsIcon.png",
+  themeColor:"#FFFFFF",
+  name:"Project Title",
+  latestVersion:"Version",
+  otherVersions:null,
 };
