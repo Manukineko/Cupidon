@@ -1,19 +1,18 @@
-# c∪pido∩
-a small library to create trajectories with Quadratic Bezier Curves that you will love (may be).
+<h1 align = "center"> cUpido∩ </h1>
+<p align = "center">
+<!--img src = "https://i.imgur.com/m255R2h.png" /> <br-->
+A small library to create trajectories for objects with Quadratic Bezier Curves that loves you.<br><br>
+  for <b>Gamemaker 2024+</b><br><br>
+Download the lastest version <a href = "https://github.com/manukineko/Cupidon/releases">here</a>
+</p>
+<p align = "center">
+Read the documentation <a href = "https://manukineko.github.io/Cupidon-docs">here</a>
+</p>
 
-I was quite frustrated when I add to create a trajectory for annitem to follow in order to simulate a simple throw at from a character, without relying on physics and friction.
-I just wanted a nice parabola.
-
-This library allows you to create a parabola (a simple quadratic Bezier curve) as a constructor and it will calculate automatically a coordinate on the curve for you to use with any stuff, just doing :
-```gml
-// attached object step event or where you want
-x = myParabola.x
-y = myParabola.y
-```
-
-to create a parabola, you need a starting point, an ending point (several method are available for different way of set that point up) and a height.
-
-then Librarie support
-- motion - to update the point position each frame
-- 
-- rotation - to sync (or not) the rotation to the duration
+> [!WARNING]
+> Cupidon is quite usable but still in very Beta, with probable bugs and a lot of typos as I have yet :
+> - intensively tested it in context in my own game project
+> - find a way to switch my brain to english when you are an old french guy living in Japan.
+>   
+> I am also all hears about methods and features naming or logic improvements as I'm also yet :
+> - to become as a skilled programmer as everyone else on the <a href = "https://discord.com/invite/RDYyRqBswD">Gamemaker Kitchen</a>'s discord 😭.
