@@ -16,7 +16,7 @@ if mouse_check_button_pressed(mb_left){
     //defined
     trajectory.end_Point(Target.x , Target.y);
     //trajectory.control_Point(x, Target.y);
-    trajectory.apex_Height_Alt(1, 0.5, false);
+    trajectory.apex_Height(50, 0.5, false);
     //trajectory.motion_Set_AnimCurve(Linear);
     trajectory.anchor_On_End(function(){
         trajectory.motion_pause();

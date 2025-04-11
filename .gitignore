@@ -58,3 +58,11 @@ Temporary Items
 *.resource_order
 *.old
 Tome-GH-token.txt
+datafiles/Tome
+objects/__tomeController
+scripts/__tome
+scripts/__tomeFuncQueue
+scripts/__tomeInit
+scripts/__tomeSystemFunctions
+scripts/tomeConfig
+scripts/tomeDocSetup

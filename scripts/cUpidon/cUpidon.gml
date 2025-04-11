@@ -19,18 +19,8 @@ enum MOTION_UNIT{
     STEPS
 }
 
-/*
-TO DO :
--[ ] anchor scale - with Animation curve support as well
--[ ] Sequence of curves
--[ ] Motion loop
--[ ] Motion reverse
--[ ] lot of getters (anchor x, y, angle)
-*/
-
-
 /// @constructor
-/// @func Cupidon(_start_x, _start_y, _distance_h, _distance_v, _height, _isometric, _internal, _scope)
+/// @func Cupidon([_start_x], [_start_y], [_distance_h], [_distance_v], [_height], [_isometric], [_internal], [_scope])
 /// @desc Create a Parabola as a Quadratic Bézier Curve. The parabola has an anchor point with an x and y coordinate as well as an angle to use in order to attach an object or any thing else that can use them.
 ///			It also has methods to update the anchor position and rotation along the Parabola.
 /// @param {real} [_start_x] The start point x coordinate
@@ -104,11 +94,10 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     
     motion_unit		= CUPIDON_DEFAULT_MOTION_UNIT; // the motion unit to use for calcute the anchor speed
     
-#region Curve
-    /// @text ## Curve
-    /// The methods that will set the parabola
+#region Parabola
+    /// @slug parabola-intro
     
-    ///@method simple_Parabola(_start_x, _start_y, _distance_h, _distance_v, _height, _isometric)
+    ///@method simple_Parabola(_start_x, _start_y, [_distance_h], [_distance_v], [_height], [_isometric])
     /// @desc  Create a simple parabola (mimicing parametric equations) with default values
     /// @param {real} _start_x start point coordinate
     /// @param {real} _start_y end point coordinate
@@ -132,12 +121,13 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         start_x = _x;
         start_y = _y;
         // = end_x - start_x;
-        __update_Metrics()
+        __update_Metrics();
         return self;
     };
     /// @method control_Point(x,y)
     /// @desc Define the control point position (the middle point)
-    /// **Shouldn't be use neither with another `apex_*` method as it will change the height calculated by those methods as well**
+    /// 
+    /// !> **This method can't be use with the `apex_*` methods as those will fight to set the vertex coordinate**
     /// @param {real} _x x position
     /// @param {real} _y y position
     /// @returns {struct} 
@@ -151,18 +141,22 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         return self;
     };
     /// @method end_Point(x,y)
-    /// @desc Define the ending point
+    /// @desc Define the ending point.
+    ///
+    /// !> **This method can't be use with the `end_By_*` methods as they will fight to set the end point coordinate**
     /// @arg {real} _x x position
     /// @arg {real} _y y position
     /// @return {struct} return self to allow chaining.
     end_Point = function(_x, _y) {
         end_x = _x;
         end_y = _y;
-        __update_Metrics()
+        __update_Metrics();
         return self;
     };
     /// @method end_By_Distance(horizontal, vertical)
     /// @desc  Define an ending point based on a vhorizontal and vertical distance from the starting point
+    ///
+    /// !> **This method can't be use with the others `end_By_*` or the `end_point` method as they will fight to set the end point coordinate**
     /// @param {real} _distance_h Description
     /// @param {real} _distance_v Description
     /// @returns {struct} 
@@ -176,6 +170,8 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     };
     /// @method end_By_Direction(distance, direction)
     /// @desc Defini an ending point based on a distance and a direction (use `lengthdir` internally. 
+    ///
+    /// !> **This method can't be use with the others `end_By_*` or the `end_point` method as they will fight to set the end point coordinate**
     /// @param {real} _distance a distance
     /// @param {real} _direction a direction in degre
     /// @returns {struct} self
@@ -189,9 +185,10 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         distance = _distance;
         return self;
     };
-    /// @method apex_Height(height, x pos, isometric)
+    /// @method apex_Height(height, [x pos], [isometric])
     /// @desc Define the top height of the parabola (vertex) with a distance. It is **NOT** the control point's height.
-    /// @text !> **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
+    /// 
+    /// !> **This method can't be use with others `apex_*` or the `control_point` method as they will fight to set the vertex coordinate**
     /// @param {real} _apex_height The height of the parabola
     /// @param {real} [_x_ratio]=0.5 the x position where the vertex is positioned.
     /// @param {bool} [_isometric]=false This modify the height calculation between a kind of ortho view & Isometric view. 
@@ -207,13 +204,13 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         
         if _isometric{
             vertex_x = _mx + lengthdir_x(_apex_height, 90);
-            vertex_y = _my + lengthdir_y(_apex_height, 90)//- _apex_height;
+            vertex_y = _my + lengthdir_y(_apex_height, 90);
             height_iso = _apex_height;
             height_ortho = max(start_y, end_y) - vertex_y;
         }else{
 
             vertex_x = start_x + _x_ratio * distance_h;
-            vertex_y = min(start_y, end_y) - _apex_height //min(start_y, end_y) - _apex_height;
+            vertex_y = min(start_y, end_y) - _apex_height;
             height_ortho = _apex_height;
             height_iso    = vertex_y - _my;
 
@@ -228,9 +225,10 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     
     /// @text ---
     
-    /// @method apex_Height_Alt(x pos, y pos)
+    /// @method apex_Height_Alt([x pos], [y pos])
     /// @desc Define the top height of the parabola (vertex) with a ratio. Isometric mode isn't supported yet.
-    /// @text !> **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
+    ///
+    /// !> **This method can't be use with others `apex_*` or the `control_point` method as they will fight to set the vertex coordinate**
     /// @param {real} [_y_ratio]=0.5 vertical ratio (0,1) to stay on the parabola, <0,1<: outside of the parabola.
     /// @param {real} [_x_ratio]=0.5 horizontal ratio (0,1) to stay on the parabola, <0,1<: outside of the parabola.
     /// @returns {struct}
@@ -248,7 +246,8 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     };
     /// @method apex_Coord(x, y)
     /// @desc  Define the top height of the parabola (vertex) with a coordinate. It is **NOT** the control point's coordinate
-    /// **Shouldn't be use neither with another `apex_*` method nor `apex_Point` as it will change the height calculated by those methods as well**
+    /// 
+    /// !> **This method can't be use with others `apex_*` or the `control_point` method as they will fight to set the vertex coordinate**
     /// @param {any*} _x x position
     /// @param {any*} _y y position
     /// @returns {struct} self
@@ -263,7 +262,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         control_y = 2 * vertex_y - 0.5 * (start_y + end_y);
         return self;
     }
-    /// @method curve_Length(precision)
+    /// @method curve_Length([precision])
     /// @desc Calculate the parabola's length (this is a slow method).
     ///	@text ?> I discourage using it each steps
     /// @arg {real} [_precision]=100 the precision of the calculation. a higher value means a better precision but at a cost of performance. 
@@ -286,7 +285,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         }
         return length;
     };
-    /// @method curve_Length_Ext(method, precision)
+    /// @method curve_Length_Ext([method], [precision])
     /// @desc Calculate the parabola's length using different approaches.
     /// - 0: Approximation by summing segments.
 	/// - 1: Numerical integration (Simpson's Rule).
@@ -318,18 +317,64 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 	};
     
 #endregion
+#region Point
+	
+    /// @slug point-intro
+	/// @method point_Get_X(_position)
+    /// @desc  Get the x coordinate of a point on the prabola, at the given position.
+    /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
+    /// @returns {real} the point's `x` value in the room    
+    point_Get_X = function(_position) {
+        return sqr(1 - _position) * start_x + 2 * (1 - _position) * _position * control_x + sqr(_position) * end_x;
+    };
+    /// @method point_Get_Y(_position)
+    /// @desc  Get the `y` value of a point on the parabola at the given `position`
+    /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
+    /// @returns {real} the point's `y` value in the room 
+    point_Get_Y = function(_position) {
+        return sqr(1 - _position) * start_y + 2 * (1 - _position) * _position * control_y + sqr(_position) * end_y;
+    };
+    /// @method point_Get_Orientation(_position)
+    /// @desc return the angle of a point to the tangent of the parabola at its current position.
+	/// This method return the angle based on a position, ensuring the point maintains a natural orientation along the parabola.
+    /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
+    point_Get_Orientation = function(_position){
+    	return __get_Tangent(_position);
+    }
+    /// @method point_Is_At(_position, [_single_frame])
+    /// @desc Return true when the position is reached.
+    /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
+    /// @arg {bool} [_single_frame]=true return `true` __only__ when on the single frame (true) when the position is reached (then turn back to `false`)
+    /* If you use an Animation Curve, the method could return true multiple time, even with the _single_frame` booleen.
+    // Could happened with curves like Bounce or Elastic.*/
+    point_Is_At = function(_position, _single_frame = true){
+        return _single_frame 
+            ? motion_ratio >= _position &&  m_next_ratio >= _position && m_prev_ratio < _position
+            : motion_ratio >= _position;
+    }
+    /// @method point_Is_At_Checkpoint(_index, [_single_frame])
+    /// @desc Like `motion_Is_At` but check the position of a Checkpoint instead
+    /// @param {real} _index the index of the checkpoint in the checkpoints array to check
+    /// @param {bool} _single_frame only on the frame it turns true
+    /// @return {bool} true or false
+    point_Is_At_Checkpoint = function(_index, _single_frame = true){
+        if (_index < 0 || _index >= array_length(checkpoints)) {
+            show_debug_message($"Checkpoint index {_index} not valid !");
+            return false;
+        }
+    
+        var _checkpoint = checkpoints[_index];
+    
+        // Check the position and return
+        return point_Is_At(_checkpoint.position, _single_frame);
+    };
+#endregion
 #region Anchor
+    /// @slug anchor-intro
     
-    /// @text ## Anchor
-    /// @text The Anchor is a point whose coordinate are stored in the `x` and `y` variable.
-    /// They are automatically updated when calling `anchor_Motion` and you retrieve those like this:
-    /// @example
-    /// // Instance step event
-    /// x = myCupidon.x
-    /// y = myCupidon.y
-    
-    /// @method anchor_Set(position)
-    /// @desc  Set the internal point's `x` and `y` on the parabola.
+    /// @insert anchor-setters-intro
+    /// @method anchor_Set(_position)
+    /// @desc  Set the anchor's coordinate `x` and `y` at the given poisiton on the parabola.
     /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
     /// @returns {struct}    
     anchor_Set = function(_position) {
@@ -338,8 +383,79 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 
         return self;
     };
+    /// @insert separator
+    /// @method anchor_Speed(_speed, [_motion_unit])
+    /// @desc    the speed of the tracking point on the parabola (from the starting point to the ending point). it can be a Time, a Ratio or Steps.
+    ///			The method also calculate a basic rotation_rate.
+    /// @arg {real} _speed time: in second, ratio: percentage by steps between [0, 100], steps: gamemaker's steps  
+    /// @arg {string} [_motion_unit]="unit_time" The type of unit of the speed value set.
+    anchor_Speed = function(_speed, _motion_unit = motion_unit){
+        if variable_struct_exists(self, _motion_unit){
+            motion_unit = variable_struct_get(self, _motion_unit);
+        }
+        switch(motion_unit){
+            //motion_time (second)
+            case 0 :    motion_time = abs(_speed);
+                        motion_steps = abs(_speed) * game_speed;
+                        motion_rate = 1/motion_steps;
+            break;
+            //ratio (percentage per steps)
+            case 1 :    motion_rate = min(abs(_speed) / 100, 1);
+                        motion_time = 1/ (motion_rate * game_speed);
+                        motion_steps = abs(motion_time) * game_speed;
+            break;
+            //steps
+            case 2 :    motion_steps = abs(_speed);
+                        motion_time = motion_steps / game_speed;
+                        motion_rate = 1/motion_steps;
+            break;
+        }
+
+    	return self;
+    }
+    /// @insert separator
+    /// @method anchor_Rotation([_speed], [_cycle_amount], [_force_cycle])
+    /// @desc calculate and set a rotation rate, and a behaviour for the rotation of the anchor point
+    /// @arg {real} [_speed]=rotation_rate the rotation speed. By default, it use the rotation rate calculated by the method `anchor_Speed`
+    /// @arg {real} _cycles_amount the number of complete rotations (cycle) (-1: illimited, 0: no rotation (equal to speed = 0), 1..n: complet rotations)
+    /// @arg {bool} _force_cycle force the anchor to sync the amount of cycle (complete rotation) to the arrival on the end point.
+    /// @return {struct} self
+    anchor_Rotation = function(_speed = rotation_rate, _cycles_amount = -1, _force_cycle = false) {
+        // cache the value
+        force_cycle = _force_cycle;
+        cycles_amount = floor(_cycles_amount);
+        
+        rotation_initialized = true; //flag the rotation as initialized.
+        
+        if (force_cycle && motion_steps > 0) {
+            if (cycles_amount == -1) {
+                var _cycles = motion_steps * _speed / 360;
+                var _whole_cycles = round(_cycles);
+                rotation_rate = (360 * _whole_cycles) / motion_steps; // adjust the rate to the closest based on the given `_speed`
+            } else {
+                rotation_rate = (360 * cycles_amount) / motion_steps; // adjust the rate to the fixed amount of cycle
+            }
+        } else {
+            rotation_rate = _speed; // Use `_speed` the raw `_speed`. no sync. 
+        }
+    
+        
+        return self;
+    };
+    /// @insert separator
+    /// @method anchor_On_End(_callback, [_args])
+    /// @desc Set a callback when the anchor reaches the end point.
+    /// @arg _callback the callback to fire
+    /// @arg [_args] arguments for the callback.
+    /// @return {struct} self
+    anchor_On_End = function(_callback, _args = undefined){
+        on_end_callback = _callback;
+        on_end_arg = _args;
+        return self;
+    }
+    /// @slug anchor-updaters-intro
     /// @method anchor_Motion([_on_end])
-    /// @desc Update the tracking point's coordinate on the parabola. This method is to be call each frame to be fully exploited.
+    /// @desc The main method. it update the anchor's coordinate on the parabola, but also ist roation or orientation, and its scale when `motion_Internal_Transform` is set to `true`
     /// @arg {bool} [_on_end]=false Trigger the callback when the end of the parabola is reached.
 	anchor_Motion = function(_on_end = false){
 	    if is_stopped {
@@ -446,8 +562,11 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 	
 	    return self;
 	};
+	/// @insert separator
 	/// @method anchor_Rotate()
-    /// @desc Rotate the point. Should be called in the step event.
+    /// @desc Rotate the point. Need to be called each steps if `motion_Internal_Transform` is `false`.
+    ///
+    /// 	!> **This method can't be use with `anchor_Orient` as both will fight to update the `angle` variable.**
      anchor_Rotate = function() {
      	if (!rotation_initialized) {
 	        // calculate a default rotation base on 
@@ -473,131 +592,26 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         return self;
     };
     
-    /// @text ---
-    
+  
+	/// @insert separator  
     /// @method anchor_Orient()
     /// @desc set the angle of the anchor point to the tangent of the parabola at its current position.
 	/// This method updates the angle based on the motion ratio (position), ensuring the tracker maintains a natural orientation along the parabola.
+	/// Need to be called each steps if `motion_Internal_Transform` is `false`.
+	///
+	/// !>	**This method can't be use with `anchor_Rotate` as both will fight to update the `angle` variable.**
     anchor_Orient = function(){
     	angle = __get_Tangent(motion_ratio);
     }
     
-    /// @text ---
-    
-    /// @method anchor_Speed(_speed, [_motion_unit])
-    /// @desc    the speed of the tracking point on the parabola (from the starting point to the ending point). it can be a Time, a Ratio or Steps. The method also calculate a basic rotation_rate
-    /// @args {real} _speed time: in second, ratio: percentage by steps between [0, 100], steps: gamemaker's steps  
-    /// @args {string} [_motion_unit]="unit_time" The type of unit of the speed value set.
-    anchor_Speed = function(_speed, _motion_unit = motion_unit){
-        if variable_struct_exists(self, _motion_unit){
-            motion_unit = variable_struct_get(self, _motion_unit);
-        }
-        switch(motion_unit){
-            //motion_time (second)
-            case 0 :    motion_time = abs(_speed);
-                        motion_steps = abs(_speed) * game_speed;
-                        motion_rate = 1/motion_steps;
-            break;
-            //ratio (percentage per steps)
-            case 1 :    motion_rate = min(abs(_speed) / 100, 1);
-                        motion_time = 1/ (motion_rate * game_speed);
-                        motion_steps = abs(motion_time) * game_speed;
-            break;
-            //steps
-            case 2 :    motion_steps = abs(_speed);
-                        motion_time = motion_steps / game_speed;
-                        motion_rate = 1/motion_steps;
-            break;
-        }
-
-    	return self;
-    }
-    /// @desc set the rotation of the tracker point
-    /// @arg {real} [_speed]=rotation_rate the rotation speed. By default, it use the rotation speed calculated by the method `motion_Speed`
-    /// @arg {real} _cycles_amount the number of complete rotations (cycle) (-1: illimited, 0: no rotation (equal to speed = 0), 1..n: complet rotations)
-    /// @arg {bool} _force_cycle force the anchor to sync the amount of cycle (complete rotation) to the arrival on the end point.
-    rotation = function(_speed = rotation_rate, _cycles_amount = -1, _force_cycle = false) {
-        // cache the value
-        force_cycle = _force_cycle;
-        cycles_amount = floor(_cycles_amount);
-        
-        rotation_initialized = true; //flag the rotation as initialized.
-        
-        if (force_cycle && motion_steps > 0) {
-            if (cycles_amount == -1) {
-                var _cycles = motion_steps * _speed / 360;
-                var _whole_cycles = round(_cycles);
-                rotation_rate = (360 * _whole_cycles) / motion_steps; // adjust the rate to the closest based on the given `_speed`
-            } else {
-                rotation_rate = (360 * cycles_amount) / motion_steps; // adjust the rate to the fixed amount of cycle
-            }
-        } else {
-            rotation_rate = _speed; // Use `_speed` the raw `_speed`. no sync. 
-        }
-    
-        
-        return self;
-    };
-    /// @desc Set a callback when the tracking point reach the ending point.
-    /// @arg _callback the callback to set
-    /// @arg [_args] arguments for the callback.
-    anchor_On_End = function(_callback, _args = undefined){
-        on_end_callback = _callback;
-        on_end_arg = _args;
-        return self;
-    }
-    
-#endregion
-#region Point
-   
-    /// @desc  Get the `x` value of a point on the parabola at the given `position`
-    /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
-    /// @returns {real} the point's `x` value in the room    
-    point_Get_X = function(_position) {
-        return sqr(1 - _position) * start_x + 2 * (1 - _position) * _position * control_x + sqr(_position) * end_x;
-    };
-    /// @desc  Get the `y` value of a point on the parabola at the given `position`
-    /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
-    /// @returns {real} the point's `y` value in the room 
-    point_Get_Y = function(_position) {
-        return sqr(1 - _position) * start_y + 2 * (1 - _position) * _position * control_y + sqr(_position) * end_y;
-    };
-    /// @desc return the angle of a point to the tangent of the parabola at its current position.
-	/// This method return the angle based on a position, ensuring the point maintains a natural orientation along the parabola.
-    /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
-    point_Get_Orientation = function(_position){
-    	return __get_Tangent(_position);
-    }
-    /// @desc Return true when the position is reached.
-    /// @param {real} _position the position on the parabola. Between 0 (start point) and 1 (end point). A negative value is before the start point and a value superior to 1 is after the end point.
-    /// @arg {bool} [_single_frame]=true return `true` __only__ when on the single frame (true) when the position is reached (then turn back to `false`)
-    /* If you use an Animation Curve, the method could return true multiple time, even with the _single_frame` booleen.
-    // Could happened with curves like Bounce or Elastic.*/
-    point_Is_At = function(_position, _single_frame = true){
-        return _single_frame 
-            ? motion_ratio >= _position &&  m_next_ratio >= _position && m_prev_ratio < _position
-            : motion_ratio >= _position;
-    }
-    /// @desc Like `motion_Is_At` but check the position of a Checkpoint instead
-    /// @param {real} _index the index of the checkpoint in the checkpoints array to check
-    /// @param {bool} _single_frame only on the frame it turns true
-    /// @return {bool} true or false
-    point_Is_At_Checkpoint = function(_index, _single_frame = true){
-        if (_index < 0 || _index >= array_length(checkpoints)) {
-            show_debug_message($"Checkpoint index {_index} not valid !");
-            return false;
-        }
-    
-        var _checkpoint = checkpoints[_index];
-    
-        // Check the position and return
-        return point_Is_At(_checkpoint.position, _single_frame);
-    };
+    /// @insert separator
 #endregion
 #region Motion
-
-    /// @desc start the anchor. Can be use to resume as well. the `motion` method needs to be called somewhere.
-    motion_play = function() {
+	
+	/// @slug anchor-motion-intro
+	/// @method motion_Play()
+    /// @desc start the anchor. Can be use to resume as well.
+    motion_Play = function() {
             if (motion_ratio >= 1) {
                 motion_ratio = 0;
                 curve_ratio = 0;
@@ -608,15 +622,19 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
             is_stopped = false;
         return self;
     };
-    /// @desc Pause the tracking point. The `motion` method needs to be called somewhere.
-    motion_pause = function() {
+    /// @insert separator
+    /// @method motion_Pause()
+    /// @desc Pause the tracking point.
+    motion_Pause = function() {
         if (is_paused || is_stopped) return self; // Ne rien faire si déjà en pause ou arrêté
         is_paused = true;  // Marquer comme "en pause"
         return self;
 
     };
-    /// @desc Stop the tracking point. it will goes back to the start of the parabola. The `motion` method needs to be called somewhere.
-    motion_reset = function() {
+    /// @insert separator
+    /// @method motion_Reset()
+    /// @desc Stop the tracking point. it will goes back to the start of the parabola.
+    motion_Reset = function() {
         motion_ratio = 0; // Réinitialise la progression
         curve_ratio = 0;
         //is_playing = false;
@@ -625,7 +643,9 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         at_end = false;   // Remet l'état "non terminé"
         return self;
     };
-    /// @desc Resume the tracking point (from the pause state). The `motion` method needs to be called somewhere.
+    /// @insert separator
+    /// @method motion_Resume()
+    /// @desc Resume the tracking point (from the pause state).
     motion_resume = function() {
         //if (!is_paused) return self; // Ne fait rien si le mouvement n'est pas en pause
         //is_playing = true;
@@ -636,14 +656,17 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         return self;
 
     };
-    /// @desc Toggle between pause and resume. The `motion` method needs to be called somewhere.
+    /// @insert separator
+    /// @method motion_Toggle_Pause()
+    /// @desc Toggle between pause and resume.
     motion_Toggle_Pause = function() {
         if (is_stopped) return self;
     
         is_paused = !is_paused;
         return self;
     };
-    
+    /// @insert separator
+    /// @method motion_Set_AnimCurve(_animcurve)
     /// @desc Set an Animation Curves to be use as the position on the parabola
     /// @arg {Asset.GMAnimCurve} _animcurve theAnimation Curve to use
 	motion_Set_AnimCurve = function(_animcurve) {
@@ -665,16 +688,22 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 	
 	    return self;
 	};
-	/// @desc	Set the global behaviour for handling the anchor transformation rotate and scale. /!\ scale isn't implemented yet.
-	///			It manage if those transformation should be handle by the `anchor_Motion` internally or through the dedicated methods `anchor_Rotate`
-	/// @desc {bool} _internal true for internal, false for external
+	/// @insert separator
+	/// @method motion_Internal_Transforms(_internal)
+	/// @desc	Set the global behaviour for handling the anchor transformation rotate and scale. 
+	///			It manages if those transformations should be handle internally by the `anchor_Motion` method or with their dedicated methods (eg: `anchor_Rotate`)
+	///
+	///			?> `anchor_Scale` is a **planned feature**.
+	/// @arg {bool} _internal true for internal, false for external
 	motion_Internal_Transforms = function(_internal){
-		internal_transforms = _internal
+		internal_transforms = _internal;
 	}
 	
 #endregion	
 #region Checkpoints
-    
+	/// @slug checkpoints-intro
+	
+	/// @method add_Checkpoint(_position, [_callback], [_args], [_single_frame], [_once], [_sort])
     /// @desc	Add a checkpoint to the parabola's checkpoints array.
     //			No duplicates support for now.
     /// @arg	{real} _position the position to reach to trigger the check point
@@ -682,7 +711,8 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     /// @arg	{struct,array} [_args]=undefined the argument for the callback
     /// @arg     {bool} _single_frame if the checkpoint return true only on the frame when the position is reached,
     /// @arg	{bool} [_once]=true If the checkpoint should be checked once or each time it is reached. 
-    add_Checkpoints = function(_position, _callback = undefined, _args = undefined, _single_frame = true, _once = true, _sort = false){
+    /// @arg	{bool} [_sort]=false Sort the checkpoints array based on the position in ascending order. If you need more control on the sorting behaviour, use the `sort_Checkpoints` method.
+    add_Checkpoint = function(_position, _callback = undefined, _args = undefined, _single_frame = true, _once = true, _sort = false){
         var _data = {
             position : _position,
             callback : _callback,
@@ -701,7 +731,8 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         
         return self;
     }
-    /// @desc remove a checkpoint at the given index in the checkpoints array
+    /// @insert separator
+    /// @desc Remove a checkpoint at the given index in the checkpoints array
     /// @arg {real} _index the index of the checkpoint
     /// @arg {bool} [_sort]=false Sort the array by ascending position.
     /// @return self
@@ -721,11 +752,14 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         
         return self;
     }
-    /// @desc remove all checkpoint from the checkpoints array
+    /// @insert separator
+    /// @method remove_Checkpoints_All()
+    /// @desc Remove all the checkpoints from the checkpoints array.
     remove_Checkpoints_All = function(){
     	checkpoints = undefined;
     }
-    /// @desc remove the set callback and arguments of a checkpoint at the given index from the checkpoints array
+    /// @insert separator
+    /// @desc Remove the callback and its arguments of the checkpoint at the given index from the checkpoints array
     /// @arg {real} _index the index of the checkpoint to remove the callback from.
     /// @return self
     remove_Checkpoint_Callback = function(_index){
@@ -741,10 +775,20 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     	
     	return self;
     }
+    /// @insert separator
+    /// @method edit_Checkpoint(index or ref, variable or struct)
+    /// @desc ?> Planned Feature - see Roadmap
+    /// @insert separator
+    /// @method sort_Checkpoints(sorting)
+    /// @desc ?> Planned Feature - see Roadmap
     
+    /// @insert separator
 #endregion
 #region Draw
-	/// @desc draw the parabola as a succession of point.
+	/// @slug draw-intro
+
+	/// @method draw([_point_number], [_start_color], [_end_color], [_color1], [_color2])
+	/// @desc draw the parabola as a line of points.
 	/// @arg {real} [_point_number]=16 the number of point that formed the parabola
 	/// @arg {Constant.Color} [_start_color]=c_red The start point color
 	/// @arg {Constant.Color} [_end_color]=c_red The end point color
@@ -767,6 +811,8 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
         
         return self;
     };
+    /// @insert separator
+    /// @method draw_Checkpoint([_index], [_color], [_size], [_outline])
     /// @desc Draw one or all checkpoint on the parabola as a diamond shape
     /// @param {real,Constant.All} [_index]=all the checkpoint to draw
     /// @param {Constant.Color} [_color]=c_green the chckpoint color
@@ -800,7 +846,8 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     	return self;
     	
     }
-    
+    /// @insert separator
+    /// @method draw_Debug([_seg], [_curve_color])
     /// @desc Draw a debug representation of the parabola.
     ///			it will draw the parabola as points linked by a line, the line between the start and end point, the start point, the end point, the controle point and the vertex point.
     /// @arg {real} _seg number of segment of the line representing the parabola. Higher value is more precise but also mor expensive.

@@ -1,0 +1,89 @@
+/// @insert separator
+
+---
+
+/// @slug cupidon-todo
+## TO-DO
+This is a list of feature I'd like to implement in Cupidon.
+
+**SOON** (but "time", you know ...) :
+
+- [ ] `anchor scale` - with Animation curve support as well
+- [ ] Motion looping
+- [ ] Motion reverse
+- [ ] lot of getters (anchor x, y, angle)
+- [ ] add_Checkpoint return the checkpoint index.
+- [ ] `edit_Checkpoint`
+- [ ] `sort_Checkpoint`
+
+**LATER**
+- [ ] Sequence of Parabolas
+- [ ] draw parabola and checkpoint with sprite.
+
+/// @slug parabola-intro
+## Parabola
+The methods that will set the parabola parameters.
+
+it just needs a start point, an end point and a control point to have a functioning parabola, but several other alternatives methods are available, especially to define an end point base on distance or to directly set the [vertex](#) position of the curve
+
+---
+
+/// @slug point-intro
+## Point
+
+The following method allows to find or check the coordinate or orientation of any point on the curve.
+
+?> You can completely use that instead of or in parallel with the Anchor if you want. 
+
+---
+
+/// @slug anchor-intro
+## Anchor
+
+The Anchor is a point whose coordinate and angle are stored in Cupidon's internal `x`, `y`and `angle` variables.
+
+They are automatically updated when calling `anchor_Motion` and you retrieve those like this:
+
+```gml
+    // Instance step event
+    x = myCupidon.x
+    y = myCupidon.y
+```
+
+---
+
+/// @insert anchor-setters-intro
+### Setters
+
+Methods that will set several parameters use by the Updaters methods to update the Anchor.
+
+---
+
+/// @slug anchor-updaters-intro
+### Updaters
+
+Methods that should be call each steps. They update the Anchor's transforms.
+
+---
+
+/// @slug anchor-motion-intro
+### Motion
+Those methods relate to all motion behaviour regarding the Anchor.  
+you can control the Anchor's , well ... motion on the parabola when `anchor_Motion` is used, basically like using a media player, with Play, Pause, etc, but also set an *Animation Curves* to smoothly animate the anchor's progress on the parabola.
+
+---
+
+/// @slug checkpoints-intro
+## Checkpoints
+
+Checkpoints is a feature that allows to define different position on the parabola that, once reached by the Anchor
+can trigger a callback. They are like an anchor targeted and automated version of the method `point_Is_At`.  
+There are optional parameters to manage a checkpoint's behaviour.
+
+---
+
+/// @slug draw-intro
+## Drawing
+
+You can draw the parabola with the start and end point with a color, but also any or all checkpoints (if set).  
+However, that is really basic and I guess you would want to use your own implementation, using the `point_Get_*` methods.  
