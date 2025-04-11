@@ -1,24 +1,6 @@
 /// @category Cupidon
 /// @title API
 
-// set the type of gamespeed for the library. Default: gamespeed_fps
-//gamespeed_microseconds is UNTESTED
-#macro CUPIDON_GAMESPEED_TYPE gamespeed_fps 
-// define the default type of unit to calculate the motion_rate of the anchor. Default : MOTION_UNIT.TIME
-#macro CUPIDON_DEFAULT_MOTION_UNIT MOTION_UNIT.TIME
-
-// Private - DO NOT MODIFY !
-#macro __CUPIDON_GAUSS_WEIGHTS [0.23693, 0.47863, 0.56889, 0.47863, 0.23693]
-#macro __CUPIDON_GAUSS_POINTS [0.04691, 0.23075, 0.5, 0.76925, 0.95309]
-
-// Used to define the Unit to use to calculate the anchor_Speed.
-// Is used in the `anchor_Speed` method
-enum MOTION_UNIT{
-    TIME,
-    RATIO,
-    STEPS
-}
-
 /// @constructor
 /// @func Cupidon([_start_x], [_start_y], [_distance_h], [_distance_v], [_height], [_isometric], [_internal], [_scope])
 /// @desc Create a Parabola as a Quadratic Bézier Curve. The parabola has an anchor point with an x and y coordinate as well as an angle to use in order to attach an object or any thing else that can use them.
@@ -72,7 +54,9 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 	motion_curve_channel = undefined; // cache the channel to use in the animation curve
     
     rotation_rate   		= 0; // the rotation rate of the anchor
+    rotation_rate_default	= 360/game_speed
     rotation_initialized	= false; // manage the rotation initialization when switching between internal or mnethod management
+    //orientation_initialized = false; // manage the Orientation initialization when switching between internal or mnethod management
     //scale_rate
     //scale_initialized
     
@@ -86,6 +70,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     is_paused		= false; // the anchor's motion is paused
     is_completed	= false; // the anchor's motion is completed (position is > 1)
     at_end          = false; // turn `true` on the parabola completion fram (position == 1), then turn back to false
+    auto_pause_on_end = false; // booleen to auto pause the Anchor once it reaches the end of the parabola.
     finalize		= false; // internal boolean to check the unique execution of further operations when the parabola is completed.
     
     on_end_callback	= undefined; // store the callback to be fired when the anchor reaches the end point
@@ -386,7 +371,6 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     /// @insert separator
     /// @method anchor_Speed(_speed, [_motion_unit])
     /// @desc    the speed of the tracking point on the parabola (from the starting point to the ending point). it can be a Time, a Ratio or Steps.
-    ///			The method also calculate a basic rotation_rate.
     /// @arg {real} _speed time: in second, ratio: percentage by steps between [0, 100], steps: gamemaker's steps  
     /// @arg {string} [_motion_unit]="unit_time" The type of unit of the speed value set.
     anchor_Speed = function(_speed, _motion_unit = motion_unit){
@@ -415,12 +399,12 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     }
     /// @insert separator
     /// @method anchor_Rotation([_speed], [_cycle_amount], [_force_cycle])
-    /// @desc calculate and set a rotation rate, and a behaviour for the rotation of the anchor point
-    /// @arg {real} [_speed]=rotation_rate the rotation speed. By default, it use the rotation rate calculated by the method `anchor_Speed`
+    /// @desc Calculate and set a rotation rate, and a behaviour for the rotation of the anchor point. Need to be called somewhere if rotation are handle internally.
+    /// @arg {real} [_speed]=rotation_rate_default the rotation speed as an angle. By default, it use a rotation rate calculated for one full rotation per second
     /// @arg {real} _cycles_amount the number of complete rotations (cycle) (-1: illimited, 0: no rotation (equal to speed = 0), 1..n: complet rotations)
-    /// @arg {bool} _force_cycle force the anchor to sync the amount of cycle (complete rotation) to the arrival on the end point.
+    /// @arg {bool} _force_cycle force the anchor to sync the amount of cycle (complete rotation) to the arrival on the end point. It will completely bypass the `_speed` if `cycle_amount` is above `0`.
     /// @return {struct} self
-    anchor_Rotation = function(_speed = rotation_rate, _cycles_amount = -1, _force_cycle = false) {
+    anchor_Rotation = function(_speed = rotation_rate_default, _cycles_amount = -1, _force_cycle = false) {
         // cache the value
         force_cycle = _force_cycle;
         cycles_amount = floor(_cycles_amount);
@@ -436,10 +420,13 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
                 rotation_rate = (360 * cycles_amount) / motion_steps; // adjust the rate to the fixed amount of cycle
             }
         } else {
-            rotation_rate = _speed; // Use `_speed` the raw `_speed`. no sync. 
+        	if cycles_amount == 0{
+        		rotation_rate = 0
+        	} else {
+            	rotation_rate = _speed; // Use `_speed` the raw `_speed`. no sync.
+        	}
         }
     
-        
         return self;
     };
     /// @insert separator
@@ -447,12 +434,14 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     /// @desc Set a callback when the anchor reaches the end point.
     /// @arg _callback the callback to fire
     /// @arg [_args] arguments for the callback.
+    /// @arg [_auto_pause]=false auto pause the Anchor when it reach the end point.
     /// @return {struct} self
-    anchor_On_End = function(_callback, _args = undefined){
+    anchor_On_End = function(_callback, _args = undefined, _auto_pause = false){
         on_end_callback = _callback;
         on_end_arg = _args;
+        auto_pause_on_end = _auto_pause;
         return self;
-    }
+    };
     /// @slug anchor-updaters-intro
     /// @method anchor_Motion([_on_end])
     /// @desc The main method. it update the anchor's coordinate on the parabola, but also ist roation or orientation, and its scale when `motion_Internal_Transform` is set to `true`
@@ -531,7 +520,11 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 	        // if rotation is handle internally, we need to force its calculation a last time to be in sync.
 			if !internal_transforms force_last_calculations = true;
 	        show_debug_message("END REACHED");
-	
+			
+			if auto_pause_on_end{
+				motion_Pause();
+			}
+			
 	        // Trigger the callback if `_on_end` is true
 	        if _on_end && !is_undefined(on_end_callback) {
 	            if is_undefined(on_end_arg) {
@@ -543,31 +536,36 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 	    }
 	
 	    //If the motion ratio goes on, we unflag the frame.
-	    //We can also use that variable to check if the tracker has reached the end.
+	    //We can also use that variable to check if the anchor has reached the end.
 	    if (motion_ratio > 1 && at_end) {
 	        at_end = false;
 	    }
          
-	    // update the tracker point
+	    // update the anchor point
 	    anchor_Set(motion_ratio);
-        //The rotation is managed internally, but I plane to allow to managed it manually throuhgh the `rotate` method
         if internal_transforms {
         	if rotation_initialized{
 	        	__rotate();
 	        }
-        }
+	        // if orientation_initialized{
+	        //	To Support
+	        // }
 	        //if scale_initialized{
-	        	////To DO
+	        //	To DO
 	        //}
+        }
+	        
 	
 	    return self;
 	};
 	/// @insert separator
 	/// @method anchor_Rotate()
-    /// @desc Rotate the point. Need to be called each steps if `motion_Internal_Transform` is `false`.
+    /// @desc Rotate the Anchor. Need to be called each steps if rotation are handle externally and is bypassed if handle internally.
+    /// If `anchor_Rotation` isn't called upstream, the method assumes that the Anchor point want to be rotated and thus, will force a default rotation rate of one cycle per second. 
     ///
     /// 	!> **This method can't be use with `anchor_Orient` as both will fight to update the `angle` variable.**
      anchor_Rotate = function() {
+     	if internal_transforms return self;
      	if (!rotation_initialized) {
 	        // calculate a default rotation base on 
 	        rotation_rate = 360 / motion_steps; // default rotation rate
@@ -596,11 +594,23 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 	/// @insert separator  
     /// @method anchor_Orient()
     /// @desc set the angle of the anchor point to the tangent of the parabola at its current position.
-	/// This method updates the angle based on the motion ratio (position), ensuring the tracker maintains a natural orientation along the parabola.
+	/// This method updates the angle based on the motion ratio (position), ensuring the Anchor maintains a natural orientation along the parabola.
 	/// Need to be called each steps if `motion_Internal_Transform` is `false`.
 	///
 	/// !>	**This method can't be use with `anchor_Rotate` as both will fight to update the `angle` variable.**
     anchor_Orient = function(){
+    	if internal_transforms return self;
+    	// if (!orientation_initialized) {
+	       
+	    //     orientation_initialized = true; // flag the initialization as done
+	    // }
+	    if is_stopped { 
+            angle = __get_Tangent(0);
+	        return self;
+	    }
+	    if (is_paused) {
+            return self;
+	    }
     	angle = __get_Tangent(motion_ratio);
     }
     
@@ -635,24 +645,20 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     /// @method motion_Reset()
     /// @desc Stop the tracking point. it will goes back to the start of the parabola.
     motion_Reset = function() {
-        motion_ratio = 0; // Réinitialise la progression
+        motion_ratio = 0; // Re-initialize the progress
         curve_ratio = 0;
         //is_playing = false;
         is_paused = false;
         is_stopped = true;
-        at_end = false;   // Remet l'état "non terminé"
+        at_end = false;   // reset the finalize state
         return self;
     };
     /// @insert separator
     /// @method motion_Resume()
-    /// @desc Resume the tracking point (from the pause state).
+    /// @desc Resume the Anchor motion (from the pause state).
     motion_resume = function() {
-        //if (!is_paused) return self; // Ne fait rien si le mouvement n'est pas en pause
-        //is_playing = true;
-        //is_paused = false;
-        //return self;
-        if (!is_paused || is_stopped) return self; // Ne rien faire si pas en pause ou arrêté
-        is_paused = false; // Retirer l'état "pausé"
+        if (!is_paused || is_stopped) return self;
+        is_paused = false;
         return self;
 
     };
@@ -668,18 +674,20 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
     /// @insert separator
     /// @method motion_Set_AnimCurve(_animcurve)
     /// @desc Set an Animation Curves to be use as the position on the parabola
-    /// @arg {Asset.GMAnimCurve} _animcurve theAnimation Curve to use
+    /// @arg {Asset.GMAnimCurve, Constant.Undefined} _animcurve theAnimation Curve to use
 	motion_Set_AnimCurve = function(_animcurve) {
-	    if (!animcurve_exists(_animcurve)) {
-	        show_debug_message("Error: The Animation Curve doesn't exists");
-	        motion_curve = undefined;       // Réinitialiser si la courbe est invalide
-	        motion_curve_channel = undefined;  // Réinitialiser le canal en cache
+	    if (!animcurve_exists(_animcurve)) || _animcurve == undefined {
+	        if _animcurve = undefined then show_debug_message("Removed the Animation Curve"); 
+	        else show_debug_message("Warning: The animation Curve doesn't exists. Resetting to `undefined`");
+	        // remove the curve and the cached channel if not valid
+	        motion_curve = undefined;       
+	        motion_curve_channel = undefined;
 	        return self;
 	    }
 	
 	    motion_curve = animcurve_get(_animcurve);
 	    if (array_length(motion_curve.channels) > 0) {
-	        motion_curve_channel = animcurve_get_channel(motion_curve, 0); // Mettre en cache le canal 0
+	        motion_curve_channel = animcurve_get_channel(motion_curve, 0); // cache the canal 0.
 	    } else {
 	        show_debug_message($"Error: The Animation Curve {motion_curve} has no channels");
 	        motion_curve = undefined;       // re-initialize the variables
@@ -691,7 +699,7 @@ function Cupidon(_start_x = undefined, _start_y = undefined, _distance_h = 0, _d
 	/// @insert separator
 	/// @method motion_Internal_Transforms(_internal)
 	/// @desc	Set the global behaviour for handling the anchor transformation rotate and scale. 
-	///			It manages if those transformations should be handle internally by the `anchor_Motion` method or with their dedicated methods (eg: `anchor_Rotate`)
+	///			It manages if those transformations should be handle internally by the `anchor_Motion` method or with their dedicated methods (eg: `anchor_Rotate`). 
 	///
 	///			?> `anchor_Scale` is a **planned feature**.
 	/// @arg {bool} _internal true for internal, false for external

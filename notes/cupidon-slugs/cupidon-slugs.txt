@@ -3,7 +3,7 @@
 ---
 
 /// @slug cupidon-todo
-## TO-DO
+## Features
 This is a list of feature I'd like to implement in Cupidon.
 
 **SOON** (but "time", you know ...) :
@@ -15,14 +15,22 @@ This is a list of feature I'd like to implement in Cupidon.
 - [ ] add_Checkpoint return the checkpoint index.
 - [ ] `edit_Checkpoint`
 - [ ] `sort_Checkpoint`
+- [ ] Rotation direction.
 
 **LATER**
 - [ ] Sequence of Parabolas
 - [ ] draw parabola and checkpoint with sprite.
 
+## TO DO
+**IMPROVMENTS**
+- [ ] Better way to remove an Animation Curve than setting `motion_Set_AnimeCurve` to `undefined`
+- [ ] manage Orientation internally as well.
+
 /// @slug parabola-intro
 ## Parabola
 The methods that will set the parabola parameters.
+The default use case is to have those called in the create event or on an event (mouse click, jump) to set the curve once.  
+However, you could also call them each steps to update your Parabola in-real time (eg: trajetory of an arrow based on a power, etc)
 
 it just needs a start point, an end point and a control point to have a functioning parabola, but several other alternatives methods are available, especially to define an end point base on distance or to directly set the [vertex](#) position of the curve
 
@@ -56,13 +64,15 @@ They are automatically updated when calling `anchor_Motion` and you retrieve tho
 ### Setters
 
 Methods that will set several parameters use by the Updaters methods to update the Anchor.
+Those are to be called in the create event or on an event once.
+
 
 ---
 
 /// @slug anchor-updaters-intro
 ### Updaters
 
-Methods that should be call each steps. They update the Anchor's transforms.
+Methods that update the Anchor's transforms. They should be call each steps.
 
 ---
 

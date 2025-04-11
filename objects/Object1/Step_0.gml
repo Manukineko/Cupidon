@@ -18,17 +18,17 @@ if mouse_check_button_pressed(mb_left){
     trajectory.apex_Height(50, 0.5, true);
     //trajectory.motion_Set_AnimCurve(Linear);
     trajectory.anchor_On_End(function(){
-        trajectory.motion_pause();
+        trajectory.motion_Pause();
         // var _particle = part_system_create(motion_done);
         // part_system_position(_particle, x,y);
         // show_debug_message("End Callback FIRED");  
     });
     trajectory.anchor_Speed(3)
         //.rotation(, 1 , true)
-        .motion_play();
+        .motion_Play();
 }
 if mouse_check_button_pressed(mb_right){
-    trajectory.motion_reset();
+    trajectory.motion_Reset();
 }
 if keyboard_check_pressed(vk_space){
     trajectory.motion_Toggle_Pause();
